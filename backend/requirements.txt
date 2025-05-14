@@ -1,0 +1,12 @@
+numpy
+pandas
+Pillow
+joblib
+scikit-learn
+xgboost==2.1.4
+flask
+flask-cors
+python-dotenv
+pefile
+Flask-SQLAlchemy
+Flask-JWT-Extended

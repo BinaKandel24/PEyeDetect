@@ -71,3 +71,4 @@ venv/
 *.sqlite3
 
 uploads/**
+ml-models/**

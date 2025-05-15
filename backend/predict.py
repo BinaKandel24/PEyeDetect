@@ -47,7 +47,7 @@ def predict_pe_file(file_path, ensemble_model, user_id):
     info =""
 
     if(pred!=0):
-        # get remedy
+        # get malware_info, remedy, description if file contains malware
         remedy, description, info = get_remedy_desciprtion_info(pred,file_path )
 
 
@@ -58,13 +58,13 @@ def predict_pe_file(file_path, ensemble_model, user_id):
     }
     print(scan_result)
 
-    save_malware_scan_result(user_id,scan_result)
-
-    # get malware info if file is malware
-    # malware_info = get_malware_info()
-    
-    return pred_class_name, prob, file_details, remedy, description,info
-
+    if(user_id):
+        # registered users
+        save_malware_scan_result(user_id,scan_result)    
+        return pred_class_name, prob, file_details, remedy, description,info
+    else:
+        # unregistered users
+        return pred_class_name, prob, file_details, None, None, None
 
 def get_remedy_desciprtion_info(malware_id, file_path):
     print(10*"*")

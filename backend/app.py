@@ -8,7 +8,7 @@ from user_service import check_user_login, register_user, get_prediction_history
 from db import get_db, initialize_db
 from werkzeug.utils import secure_filename
 import json
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, verify_jwt_in_request
 from dotenv import load_dotenv
 from predict import predict_pe_file
 from datetime import timedelta
@@ -68,20 +68,23 @@ def get_single_user_prediction_history():
     user_id = get_jwt_identity()  
 
     predictions = get_prediction_history_by_user(user_id)
-    if(predictions):
-        return jsonify({"status":"success",
+
+    return jsonify({"status":"success",
                         "message": "prediction history for user", 
                         "count": len(predictions), 
                         "prediction_history":predictions}), 200
-    else:
-        return jsonify({"status":"error","message": "failed to get history"}), 401
     
 
 @app.route('/predict', methods=['POST'])
-@jwt_required()
 def make_prediction():
-    # extract id from token
-    user_id = get_jwt_identity()  
+
+    try:
+        # registered users
+        verify_jwt_in_request(optional=True)
+        user_id = get_jwt_identity()  
+    except Exception:
+        # unregistered users
+        user_id=None
 
     file = request.files.get("file")
     if not file:
@@ -108,6 +111,7 @@ def make_prediction():
             # response
             result = {
                 "status":"ok",
+                "login": True if user_id else False,
                 "message":"legitimate",
                 "probability":prob,
                 "risk": 1-prob,
@@ -120,6 +124,7 @@ def make_prediction():
             # response
             result = {
                 "status":"ok",
+                "login": True if user_id else False,
                 "message":"malware",
                 "malware_class": malware_class,
                 "probability":prob,
@@ -129,8 +134,9 @@ def make_prediction():
                 "capabilities":capabilities,
                 "info":info,
                 "remedy":remedy
-
             }
+
+
 
     except Exception as e:
         return jsonify({"status":"error", "message": str(e)}), 500

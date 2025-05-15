@@ -22,6 +22,9 @@ def get_file_details(file_path):
     except pefile.PEFormatError:
         details['error'] = "Not a valid PE file."
         return details
+    finally:
+        if 'pe' in locals():
+            pe.close()
 
     # Timestamp (compile time)
     timestamp = pe.FILE_HEADER.TimeDateStamp
